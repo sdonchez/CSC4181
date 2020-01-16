@@ -1,0 +1,62 @@
+<!---
+  Name: Put your name here
+  Date: 1/14/20
+  CSC 4181
+--->
+<html><head>
+<meta http-equiv="content-type" content="text/html; charset=windows-1252">
+<title>Checker</title>
+<script type="text/javascript">
+
+function check()
+{
+	// Get the input text from the "text" box
+	var text = document.getElementById("text").value;
+	
+	// Replace whitespace at the beginning and end of the text using regular expressions
+	text = text.replace(/^\s*/, "").replace(/\s*$/, "");
+	
+	// Split the text into tokens (Google for "javascript split" for ideas),
+	// which gives us an array of strings not including the whitespace
+	var tokens = text.split(/[\r\n|\r|\t|\n| ]+/);
+	
+	// Iterate through tokens and do something interesting
+	for(i=0; i<tokens.length; i++)
+	{
+		do_something_with_token(i, tokens[i]);
+	}
+}
+
+function do_something_with_token(i, token)
+{
+	append_result("token " + i + ": " + token + "\n");
+}
+
+function append_result(token)
+{
+	document.getElementById("results").value += token;
+}
+
+function clear_results()
+{
+	document.resultform.reset();
+}
+
+</script>
+</head>
+<body bgcolor="#CCFFFF">
+<h1>Checker</h1>
+<p>Copy and paste, or type, some text to be checked below and click "Check". </p>
+<form name="checker" action="javascript:check()">
+	<p><textarea rows="9" id="text" name="text" cols="99"></textarea><br>
+	<input type="submit" value="Check" name="">
+	<input type="reset" value="Reset" name="" onclick="javascript:clear_results()"></p>
+</form>
+<h2>Result</h2>
+<form name="resultform">
+	<p><textarea rows="10" id="results" name="results" cols="99" readonly="readonly"></textarea></p>
+</form>
+<p>&nbsp;</p>
+
+</body></html>
+<!-- 1-12-19 -->
