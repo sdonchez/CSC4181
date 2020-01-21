@@ -2,28 +2,35 @@
   Name: Dr. Tom Way
   Date: 1/16/20
   CSC 4181
-  Version 2, created in class 1/16/20
+  Version 2, created in class 1/21/20
 --->
 <html><head>
 <meta http-equiv="content-type" content="text/html; charset=windows-1252">
-<title>Checker 2.0</title>
+<title>Checker 3.0</title>
 <script type="text/javascript">
 
 function check()
 {
+	// NOTE: make sure to remove the hard-coded expression in the "text" box before we go "live"
+	
 	// Clear the "results" box by assigning the empty string to it.
 	document.getElementById("results").value = "";
+	
+	//////////////// Scanner //////////////////////
 	
 	// Get the input text from the "text" box
 	var text = document.getElementById("text").value;
 	
-	// Add whitespace between things
+	// Pad operators with surrounding spaces to enable clean splitting of tokens
 	text = text.replace(/\+/g, ' + ');
 	text = text.replace(/\-/g, ' - ');
 	text = text.replace(/\*/g, ' * ');
 	text = text.replace(/\//g, ' / ');
 	text = text.replace(/\(/g, ' ( ');
 	text = text.replace(/\)/g, ' ) ');
+	// More elegent regex way of reusing whatever matches in the replace string.
+	// The parens create a "group" that is numbered, first group is $1.
+	//text = text.replace(/([\+\-\*\/\(\)])/g, " $1 ");
 	
 	// Replace multiple whitespace with single space. Doing this 
 	// prevents extra space being added if you click "Check" a bunch.
@@ -41,6 +48,11 @@ function check()
 	//var tokens = text.split(/[\r\n|\r|\t|\n| ]+/); // the old way
 	var tokens = text.split(/\s+/); // CLEANER WAY to split on whitespace!!!
 	
+	//////////////// Parser //////////////////////
+
+	//alert("Parsing is about to start!")
+	console.log("Parsing is about to start!");
+	
 	// Iterate through tokens and do something interesting
 	for(i=0; i<tokens.length; i++)
 	{
@@ -50,7 +62,51 @@ function check()
 
 function do_something_with_token(i, token)
 {
-	append_result("token " + i + ": " + token + "\n");
+	append_result("token " + i + ": " + token + "  name: " + tokenName(token) + "\n");
+}
+
+function tokenName(token)
+{
+	//console.log("tokenName was called");
+	if (isAddOp(token))
+		return "addop";
+	else if (isMulOp(token))
+		return "mulop";
+	else if (isLeftParen(token))
+		return "leftparen";
+	else if (isRightParen(token))
+		return "rightparen";
+	else if (isInteger(token))
+		return "integer";
+	else
+		return "unknown";
+}
+
+function isAddOp(token)
+{
+	return token == "+" || token == "-";
+}
+
+function isMulOp(token)
+{
+	return token == "*" || token == "/";
+}
+
+function isLeftParen(token)
+{
+	return token == "(";
+}
+
+function isRightParen(token)
+{
+	return token == ")";
+}
+
+function isInteger(token)
+{
+	//return parseInt(token) >= 0; // considers floating point as number
+	//return !isNaN(token); // also considers floating point as number
+	return /^\d+$/.test(token);
 }
 
 function append_result(token)
@@ -66,10 +122,10 @@ function clear_results()
 </script>
 </head>
 <body bgcolor="#CCFFFF">
-<h1>Checker 2.0</h1>
+<h1>Checker 3.0</h1>
 <p>Copy and paste, or type, some text to be checked below and click "Check". </p>
 <form name="checker" action="javascript:check()">
-	<p><textarea rows="9" id="text" name="text" cols="99"></textarea><br>
+	<p><textarea rows="9" id="text" name="text" cols="99">5+(6*7)/8-9</textarea><br>
 	<input type="submit" value="Check" name="">
 	<input type="reset" value="Reset" name="" onclick="javascript:clear_results()"></p>
 </form>
@@ -80,4 +136,4 @@ function clear_results()
 <p>&nbsp;</p>
 
 </body></html>
-<!-- 1-16-20 -->
+<!-- 1-21-20 -->
