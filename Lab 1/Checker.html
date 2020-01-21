@@ -1,24 +1,45 @@
 <!---
-  Name: Put your name here
-  Date: 1/14/20
+  Name: Dr. Tom Way
+  Date: 1/16/20
   CSC 4181
+  Version 2, created in class 1/16/20
 --->
 <html><head>
 <meta http-equiv="content-type" content="text/html; charset=windows-1252">
-<title>Checker</title>
+<title>Checker 2.0</title>
 <script type="text/javascript">
 
 function check()
 {
+	// Clear the "results" box by assigning the empty string to it.
+	document.getElementById("results").value = "";
+	
 	// Get the input text from the "text" box
 	var text = document.getElementById("text").value;
+	
+	// Add whitespace between things
+	text = text.replace(/\+/g, ' + ');
+	text = text.replace(/\-/g, ' - ');
+	text = text.replace(/\*/g, ' * ');
+	text = text.replace(/\//g, ' / ');
+	text = text.replace(/\(/g, ' ( ');
+	text = text.replace(/\)/g, ' ) ');
+	
+	// Replace multiple whitespace with single space. Doing this 
+	// prevents extra space being added if you click "Check" a bunch.
+	text = text.replace(/\s+/g, ' ');
 	
 	// Replace whitespace at the beginning and end of the text using regular expressions
 	text = text.replace(/^\s*/, "").replace(/\s*$/, "");
 	
+	// Replace original with cleaned up version by assigning 
+	// the text back to the "text" box.
+	document.getElementById("text").value = text;
+	
 	// Split the text into tokens (Google for "javascript split" for ideas),
-	// which gives us an array of strings not including the whitespace
-	var tokens = text.split(/[\r\n|\r|\t|\n| ]+/);
+	// which gives us an array of strings not including the whitespace.
+	//var tokens = text.split(/[\r\n|\r|\t|\n| ]+/); // the old way
+	var tokens = text.split(/\s+/); // CLEANER WAY to split on whitespace!!!
 	
 	// Iterate through tokens and do something interesting
 	for(i=0; i<tokens.length; i++)
@@ -45,7 +66,7 @@ function clear_results()
 </script>
 </head>
 <body bgcolor="#CCFFFF">
-<h1>Checker</h1>
+<h1>Checker 2.0</h1>
 <p>Copy and paste, or type, some text to be checked below and click "Check". </p>
 <form name="checker" action="javascript:check()">
 	<p><textarea rows="9" id="text" name="text" cols="99"></textarea><br>
@@ -59,4 +80,4 @@ function clear_results()
 <p>&nbsp;</p>
 
 </body></html>
-<!-- 1-12-19 -->
+<!-- 1-16-20 -->
