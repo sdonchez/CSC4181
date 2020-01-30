@@ -33,14 +33,7 @@ function check()
 	
 	// Get the input text from the "text" box
 	var text = document.getElementById("text").value;
-	
-	// Pad operators with surrounding spaces to enable clean splitting of tokens
-	//text = text.replace(/\+/g, ' + ');
-	//text = text.replace(/\-/g, ' - ');
-	//text = text.replace(/\*/g, ' * ');
-	//text = text.replace(/\//g, ' / ');
-	//text = text.replace(/\(/g, ' ( ');
-	//text = text.replace(/\)/g, ' ) ');
+    
 	// More elegent regex way of reusing whatever matches in the replace string.
 	// The parens create a "group" that is numbered, first group is $1.
 	text = text.replace(/([\+\-\*\/\(\)])/g, " $1 ");
@@ -58,7 +51,6 @@ function check()
 	
 	// Split the text into tokens (Google for "javascript split" for ideas),
 	// which gives us an array of strings not including the whitespace.
-	//var tokens = text.split(/[\r\n|\r|\t|\n| ]+/); // the old way
 	tokens = text.split(/\s+/); // CLEANER WAY to split on whitespace!!!
 	
 	//////////////// Parser //////////////////////
@@ -72,11 +64,7 @@ function check()
 	// Token pre-processor: iterate through tokens and check for problems
 	for(i=0; i<tokens.length; i++)
 	{
-		// Ideas:
-		// inside this loop, you can check each token to see if it is a valid token
-		
-		//do_something_with_token(i, tokens[i]);
-		
+
 		// Increment every time you see a left paren
 		if (tokens[i] == "(")
 		{
@@ -109,13 +97,7 @@ function check()
 	
 	// Determine if the input is a valid expression
 	var result = isExp();
-	
-	// check parentheses counts (alternate technique for comparing total left vs. right)
-	//console.log("ending left: " + totalLeftParentheses);
-	//console.log("ending right: " + totalRightParentheses);
-	
-	//console.log("currentToken after parsing: " + currentToken);
-	//console.log("how many tokens we have: " + tokens.length);
+
 	
 	// Report the result, and make sure we've used ALL of the tokens
 	if (result && tokens.length == currentToken)
@@ -130,14 +112,17 @@ function check()
         tokenType = tokenName(currentToken);
         if(tokenType=="addop"||tokenType=="mulop")
         {
-            if (currentToken == 1) //since we consumed one token
+            if (currentToken == 1) //If this is the first token and an operator (1 since we consumed one token)
                 append_result("Current token is first token, and is operator. Missing operand before first operator.\n");
-            else if(currentToken == tokens.length)
+            else if(currentToken == tokens.length) //if this is the last token (not length-1 because we consumed one token)
                 append_result("Current token is last token, and is operator. Missing operand after last operator.\n")
             else if(tokenName(tokens[currentToken])=="addop"||tokenName(tokens[--currentToken])=="mulop")
+                //if this isn't the last toke, but it's an operator followed by an operator
+                //prefixed decrement on second iteration because first increments currentToken
                 {
                     append_result("Current token is operator, followed by operator. Missing operand between operators.\n");
-                    
+                    currentToken--
+                    //reset currentToken
                 }
             //reset currentToken
             currentToken--;
@@ -151,15 +136,8 @@ function check()
 	}
 }
 
-function do_something_with_token(i, token)
-{
-	currentToken = i;
-	append_result("token " + i + ": " + token + "  name: " + tokenName() + "\n");
-}
-
 function isExp()
 {
-	//console.log("isExp: " + currentToken);
 	// remember current token in case a rule below doesn't match
 	var oldCurrentToken = currentToken;
 	
@@ -184,24 +162,19 @@ function isExp()
 
 function isTerm()
 {
-	//console.log("isTerm: " + currentToken);
 	var oldCurrentToken = currentToken;
 	
 	// first rule: factor, mulop, term
-	//console.log("isTerm trying first rule");
 	if (isFactor() && isMulOp() && isTerm())
 		return true;
 		
 	currentToken = oldCurrentToken;
 	
 	// second rule: term
-	//console.log("isTerm trying second rule");
 	if (isFactor())
 		return true;
 		
 	currentToken = oldCurrentToken;
-
-	//console.log("isTerm neither rule matched");
 
 	// neither rule
 	return false;
@@ -209,7 +182,6 @@ function isTerm()
 
 function isFactor()
 {
-	//console.log("isFactor: " + currentToken);
 	var oldCurrentToken = currentToken;
 	var oldLeftParen = totalLeftParentheses;
 	var oldRightParen = totalRightParentheses;
@@ -277,7 +249,6 @@ function isLeftParen()
 {
 	if ( tokens[currentToken] == "(" )
 	{
-		//console.log("found a left paren");
 		totalLeftParentheses++;
 		currentToken++;
 		return true;
@@ -289,7 +260,6 @@ function isRightParen()
 {
 	if ( tokens[currentToken] == ")" )
 	{
-		//console.log("found a right paren");
 		totalRightParentheses++
 		currentToken++;
 		return true;
@@ -334,4 +304,3 @@ function clear_results()
 <p>&nbsp;</p>
 
 </body></html>
-<!-- 1-21-20 -->
