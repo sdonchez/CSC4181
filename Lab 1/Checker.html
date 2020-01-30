@@ -2,7 +2,7 @@
   Name: Dr. Tom Way
   Date: 1/16/20
   CSC 4181
-  Version 4, created in class 1/23/20
+  Version 5, created in class 1/28/20
 --->
 <html><head>
 <meta http-equiv="content-type" content="text/html; charset=windows-1252"><style class="darkreader darkreader--fallback" media="screen"></style><style class="darkreader darkreader--text" media="screen"></style><style class="darkreader darkreader--invert" media="screen"></style><style class="darkreader darkreader--inline" media="screen">[data-darkreader-inline-bgcolor] {
@@ -92,7 +92,7 @@ select:-webkit-autofill {
 * {
     scrollbar-color: #2a2c2e #1c1e1f;
 }</style>
-<title>Checker 4.0</title>
+<title>Checker 5.0</title>
 <script type="text/javascript">
 
 // Array of tokens
@@ -101,10 +101,18 @@ var tokens;
 // Keep track of the current token
 var currentToken;
 
+// Parentheses counters (alternate parentheses technique)
+var totalLeftParentheses = 0;
+var totalRightParentheses = 0;
+
 function check()
 {
 	// NOTE: make sure to remove the hard-coded expression in the "text" box before we go "live"
 	
+	// Reset parentheses counters to 0
+	totalLeftParentheses = 0;
+	totalRightParentheses = 0;
+
 	// Clear the "results" box by assigning the empty string to it.
 	document.getElementById("results").value = "";
 	
@@ -145,20 +153,59 @@ function check()
 	//alert("Parsing is about to start!")
 	console.log("Parsing is about to start!");
 	
-	// Iterate through tokens and do something interesting
+	// parentheses counter (an alternative could be counting left and right parens separately)
+	var parenthesesCount = 0;
+	
+	// Token pre-processor: iterate through tokens and check for problems
 	for(i=0; i<tokens.length; i++)
 	{
-		do_something_with_token(i, tokens[i]);
+		// Ideas:
+		// inside this loop, you can check each token to see if it is a valid token
+		
+		//do_something_with_token(i, tokens[i]);
+		
+		// Increment every time you see a left paren
+		if (tokens[i] == "(")
+		{
+			parenthesesCount++;
+		}
+		// Decrement every time you see a right paren
+		else if (tokens[i] == ")")
+		{
+			parenthesesCount--;
+			// If the count is negative, you saw a right paren before a matching left paren
+			if (parenthesesCount < 0)
+			{
+				append_result("mismatched right parenthesis, token number " + i + "\n");
+				append_result("reject");
+				return;
+			}
+		}
 	}
 	
+	// Double-check parenthese counter. If greater than 0, you have too many left parens.
+	if (parenthesesCount > 0)
+	{
+		append_result("mismatched left parenthesis, token number " + i + "\n");
+		append_result("reject");
+		return;
+	}
+
 	// Initialize to first token (index = 0)
 	currentToken = 0;
 	
 	// Determine if the input is a valid expression
 	var result = isExp();
 	
-	// Report the result
-	if (result)
+	// check parentheses counts (alternate technique for comparing total left vs. right)
+	//console.log("ending left: " + totalLeftParentheses);
+	//console.log("ending right: " + totalRightParentheses);
+	
+	//console.log("currentToken after parsing: " + currentToken);
+	//console.log("how many tokens we have: " + tokens.length);
+	
+	// Report the result, and make sure we've used ALL of the tokens
+	if (result && tokens.length == currentToken)
 	{
 		append_result("accept");
 	}
@@ -177,13 +224,23 @@ function do_something_with_token(i, token)
 
 function isExp()
 {
+	//console.log("isExp: " + currentToken);
+	// remember current token in case a rule below doesn't match
+	var oldCurrentToken = currentToken;
+	
 	// first rule: if starts with a term, followed by an addop, then an exp
 	if (isTerm() && isAddOp() && isExp())
 		return true;
-		
+	
+	// first rule didn't match, so reset current token
+	currentToken = oldCurrentToken;
+	
 	// second rule: if it's a term
 	if (isTerm())
 		return true;
+		
+	// second rule didn't match, so reset current token
+	currentToken = oldCurrentToken;
 		
 	// not the first or second rule
 	return false;
@@ -191,27 +248,49 @@ function isExp()
 
 function isTerm()
 {
+	//console.log("isTerm: " + currentToken);
+	var oldCurrentToken = currentToken;
+	
 	// first rule: factor, mulop, term
+	//console.log("isTerm trying first rule");
 	if (isFactor() && isMulOp() && isTerm())
 		return true;
+		
+	currentToken = oldCurrentToken;
 	
 	// second rule: term
+	//console.log("isTerm trying second rule");
 	if (isFactor())
 		return true;
-	
+		
+	currentToken = oldCurrentToken;
+
+	//console.log("isTerm neither rule matched");
+
 	// neither rule
 	return false;
 }
 
 function isFactor()
 {
+	//console.log("isFactor: " + currentToken);
+	var oldCurrentToken = currentToken;
+	var oldLeftParen = totalLeftParentheses;
+	var oldRightParen = totalRightParentheses;
+
 	// first rule: left paren, exp, right paren
 	if (isLeftParen() && isExp() && isRightParen())
 		return true;
+		
+	currentToken = oldCurrentToken;
+	totalLeftParentheses = oldLeftParen;
+	totalRightParentheses = oldRightParen;
 	
 	// second rule: number
 	if (isNumber())
 		return true;
+		
+	currentToken = oldCurrentToken;
 	
 	// neither rule
 	return false;
@@ -240,9 +319,14 @@ function tokenName()
 		return "unknown";
 }
 
-function isAddOp(token)
+function isAddOp()
 {
-	return token == "+" || token == "-";
+	if (tokens[currentToken] == "+" || tokens[currentToken] == "-")
+	{
+		currentToken++;
+		return true;
+	}
+	return false;
 }
 
 function isMulOp()
@@ -255,14 +339,28 @@ function isMulOp()
 	return false;
 }
 
-function isLeftParen(token)
+function isLeftParen()
 {
-	return token == "(";
+	if ( tokens[currentToken] == "(" )
+	{
+		//console.log("found a left paren");
+		totalLeftParentheses++;
+		currentToken++;
+		return true;
+	}
+	return false;
 }
 
-function isRightParen(token)
+function isRightParen()
 {
-	return token == ")";
+	if ( tokens[currentToken] == ")" )
+	{
+		//console.log("found a right paren");
+		totalRightParentheses++
+		currentToken++;
+		return true;
+	}
+	return false;
 }
 
 function isInteger()
@@ -294,17 +392,17 @@ function clear_results()
     border-color: #d8b013 !important;
     color: #f3e8c8 !important;
 }</style></head>
-<body style="--darkreader-inline-bgcolor:#005252;" data-darkreader-inline-bgcolor="" bgcolor="#CCFFFF">
-<h1>Checker 4.0</h1>
+<body style="--darkreader-inline-bgcolor:#520052;" data-darkreader-inline-bgcolor="" bgcolor="#FFCCFF">
+<h1>Checker 5.0</h1>
 <p>Copy and paste, or type, some text to be checked below and click "Check". </p>
 <form name="checker" action="javascript:check()">
-	<p><textarea rows="9" id="text" name="text" cols="99">5+(6*7)/8-9</textarea><br>
+	<p><textarea rows="9" id="text" name="text" cols="99">5 + ( 6 * 7 ) / 8 - 9</textarea><br>
 	<input type="submit" value="Check" name="">
 	<input type="reset" value="Reset" name="" onclick="javascript:clear_results()"></p>
 </form>
 <h2>Result</h2>
 <form name="resultform">
-	<p><textarea rows="10" id="results" name="results" cols="99" readonly="readonly"></textarea></p>
+	<p><textarea rows="10" id="results" name="results" cols="99" readonly="readonly">accept</textarea></p>
 </form>
 <p>&nbsp;</p>
 
