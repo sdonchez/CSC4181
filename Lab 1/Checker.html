@@ -1,8 +1,8 @@
+<!DOCTYPE html>
 <!---
-  Name: Dr. Tom Way
-  Date: 1/16/20
-  CSC 4181
-  Version 5, created in class 1/28/20
+  Name: Stephen Donchez
+  Date: 1/30/20
+  CSC 4181-002
 --->
 <html><head>
 <meta http-equiv="content-type" content="text/html; charset=windows-1252">
@@ -21,7 +21,6 @@ var totalRightParentheses = 0;
 
 function check()
 {
-	// NOTE: make sure to remove the hard-coded expression in the "text" box before we go "live"
 	
 	// Reset parentheses counters to 0
 	totalLeftParentheses = 0;
@@ -36,15 +35,15 @@ function check()
 	var text = document.getElementById("text").value;
 	
 	// Pad operators with surrounding spaces to enable clean splitting of tokens
-	text = text.replace(/\+/g, ' + ');
-	text = text.replace(/\-/g, ' - ');
-	text = text.replace(/\*/g, ' * ');
-	text = text.replace(/\//g, ' / ');
-	text = text.replace(/\(/g, ' ( ');
-	text = text.replace(/\)/g, ' ) ');
+	//text = text.replace(/\+/g, ' + ');
+	//text = text.replace(/\-/g, ' - ');
+	//text = text.replace(/\*/g, ' * ');
+	//text = text.replace(/\//g, ' / ');
+	//text = text.replace(/\(/g, ' ( ');
+	//text = text.replace(/\)/g, ' ) ');
 	// More elegent regex way of reusing whatever matches in the replace string.
 	// The parens create a "group" that is numbered, first group is $1.
-	//text = text.replace(/([\+\-\*\/\(\)])/g, " $1 ");
+	text = text.replace(/([\+\-\*\/\(\)])/g, " $1 ");
 	
 	// Replace multiple whitespace with single space. Doing this 
 	// prevents extra space being added if you click "Check" a bunch.
@@ -125,9 +124,31 @@ function check()
 	}
 	else
 	{
+        append_result("error at token " + currentToken + ": '" + tokens[currentToken] + "' is not valid in this position.\n");
+        
+        //check for missing operands
+        tokenType = tokenName(currentToken);
+        if(tokenType=="addop"||tokenType=="mulop")
+        {
+            if (currentToken == 1) //since we consumed one token
+                append_result("Current token is first token, and is operator. Missing operand before first operator.\n");
+            else if(currentToken == tokens.length)
+                append_result("Current token is last token, and is operator. Missing operand after last operator.\n")
+            else if(tokenName(tokens[currentToken])=="addop"||tokenName(tokens[--currentToken])=="mulop")
+                {
+                    append_result("Current token is operator, followed by operator. Missing operand between operators.\n");
+                    
+                }
+            //reset currentToken
+            currentToken--;
+        }
+
+        
+        //check for invalid token
+        if(tokenName(currentToken)=="unknown")
+            append_result("Current token is not a valid token type.\n");
 		append_result("reject");
 	}
-	
 }
 
 function do_something_with_token(i, token)
@@ -152,9 +173,10 @@ function isExp()
 	// second rule: if it's a term
 	if (isTerm())
 		return true;
-		
+
 	// second rule didn't match, so reset current token
-	currentToken = oldCurrentToken;
+	failToken = currentToken;
+    currentToken = oldCurrentToken;
 		
 	// not the first or second rule
 	return false;
@@ -215,10 +237,8 @@ function isNumber()
 	return isInteger();
 }
 
-function tokenName()
+function tokenName(token)
 {
-	var token = tokens[currentToken];
-	
 	if (isAddOp(token))
 		return "addop";
 	else if (isMulOp(token))
@@ -303,7 +323,7 @@ function clear_results()
 <h1>Checker 5.0</h1>
 <p>Copy and paste, or type, some text to be checked below and click "Check". </p>
 <form name="checker" action="javascript:check()">
-	<p><textarea rows="9" id="text" name="text" cols="99">5 + ( 6 * 7 ) / 8 - 9</textarea><br>
+	<p><textarea rows="9" id="text" name="text" cols="99"></textarea><br>
 	<input type="submit" value="Check" name="">
 	<input type="reset" value="Reset" name="" onclick="javascript:clear_results()"></p>
 </form>
