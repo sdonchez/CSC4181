@@ -1,0 +1,3 @@
+javac ParserTokens.java
+jflex -q mathexpr.flex
+javac MathExprScanner.java Yylex.java

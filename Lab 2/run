@@ -1,0 +1,1 @@
+java MathExprScanner < testexpressions.txt
