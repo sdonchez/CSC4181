@@ -1,0 +1,6 @@
+echo "Running yacc..."
+yacc -d -J mathexpr.y
+echo "Running JFlex..."
+jflex -q mathexpr.flex
+echo "Running javac..."
+javac MathExprParser.java Parser.java Yylex.java

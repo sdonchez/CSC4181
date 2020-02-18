@@ -1,0 +1,8 @@
+echo "Cleaning up generated files..."
+rm *.class
+rm Yylex.java 
+rm Yylex.java~
+rm Parser.java
+rm ParserTokens.java
+rm ParserVal.java
+echo "Done"
