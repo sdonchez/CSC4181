@@ -1,4 +1,6 @@
-/* Scanner template file for Math Expressions.  */
+/*
+Scanner template file for Math Expressions.
+*/
 %%
 
 %unicode
@@ -45,11 +47,12 @@ digit = [0-9]
 
 %%
 
-{digit}+				{ value = Integer.parseInt(yytext());
-						  yyparser.yylval = new ParserVal(value);
+{digit}+				{ yyparser.yylval = new ParserVal(yytext());
 						  return ParserTokens.NUMBER; }
 "+"						{ return ParserTokens.ADDOP; }
 "-"						{ return ParserTokens.SUBOP; }
+"*"						{ return ParserTokens.MULOP; }
+"/"						{ return ParserTokens.DIVOP; }
 "("						{ return ParserTokens.LPAREN; }
 ")"						{ return ParserTokens.RPAREN; }
 [\r\n]+					{ return ParserTokens.NEWLINE; }
