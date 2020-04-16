@@ -9,7 +9,7 @@ public class ParseMain
 	// Set these to produce various output. For code generation,
 	// only set CODE_GEN_OUTPUT to true, everything else to false.
 	public static boolean PARSE_OUTPUT = true;
-	public static boolean SYMBOL_TABLE_OUTPUT = false;
+	public static boolean SYMBOL_TABLE_OUTPUT = true;
 	public static boolean CODE_GEN_OUTPUT = false;
 
 	public ParseMain(Reader in)
