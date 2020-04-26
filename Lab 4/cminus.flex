@@ -65,8 +65,8 @@ return 			{return Parser.RETURN;}
 input			{return Parser.INPUT;}
 while 			{return Parser.WHILE;}
 else 			{return Parser.ELSE;}
-void 			{return Parser.VOID;}
-int 			{return Parser.INT;}
+void 			{yyparser.yylval = new ParserVal(Parser.VOID); return Parser.VOID;}
+int 			{yyparser.yylval = new ParserVal(Parser.INT); return Parser.INT;}
 if 				{return Parser.IF;}
 
 {letter}({letter}|{digit})*	{
@@ -80,11 +80,19 @@ if 				{return Parser.IF;}
 							}
 
 
+"<="			{return Parser.LTE;}
+">="			{return Parser.GTE;}
+"<"				{return Parser.LT;}
+">"				{return Parser.GT;}
+"=="			{return Parser.EQ;}
+"!="			{return Parser.NOTEQ;}
 
 "+"				{return Parser.PLUS;}
 "-"				{return Parser.MINUS;}
 "*"				{return Parser.MULT;}
 "/"				{return Parser.DIVIDE;}
+
+"="				{return Parser.ASSIGN;}
 
 ";"				{return Parser.SEMI;}
 
@@ -97,14 +105,7 @@ if 				{return Parser.IF;}
 "{"				{return Parser.LBRACE;}
 "}"				{return Parser.RBRACE;}
 
-"<="			{return Parser.LTE;}
-">="			{return Parser.GTE;}
-"<"				{return Parser.LT;}
-">"				{return Parser.GT;}
-"=="			{return Parser.EQ;}
-"!="			{return Parser.NOTEQ;}
 
-"="				{return Parser.ASSIGN;}
 {ws}			{/* ignore */}
 {comment}       {/* ignore */}
 

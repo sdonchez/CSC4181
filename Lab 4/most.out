@@ -1,0 +1,53 @@
+==================== test\most.c ====================
+Parse C-Minus program test\most.c
+
+Parse successful
+
+Symbol Table Contents
+
+===============================
+
+kind: variable 		name: aVariable		scope: 0		type: 260
+kind: function 		name: sumarray		scope: 0		type: 260
+
+params: 2
+kind: variable 		name: aNumber2		scope: 0		type: 260
+kind: function 		name: function2		scope: 0		type: 259
+
+params: 0
+kind: array 		name: anotherArray		scope: 0		type: 260		size: 234
+kind: function 		name: function1		scope: 0		type: 259
+
+params: 0
+kind: array 		name: anArray		scope: 0		type: 260		size: 123
+kind: variable 		name: aNumber1		scope: 0		type: 260
+kind: function 		name: main		scope: 0		type: 259
+
+params: 0
+kind: function 		name: combinevalues		scope: 0		type: 260
+
+params: 2
+kind: function 		name: manyRelationalOps		scope: 0		type: 259
+
+params: 1
+kind: function 		name: readAValue		scope: 0		type: 260
+
+params: 0
+kind: variable 		name: total		scope: 1		type: 260		JVM #: 15
+kind: array 		name: array		scope: 1		type: 260		JVM #: 16		size: 10
+kind: variable 		name: i		scope: 1		type: 260		JVM #: 13
+kind: variable 		name: n		scope: 1		type: 260		JVM #: 14
+kind: array 		name: emptyarray		scope: 1		type: 260		JVM #: 10		size: 300
+kind: variable 		name: length		scope: 1		type: 260		JVM #: 7
+kind: array 		name: array1		scope: 1		type: 260		JVM #: 8
+kind: variable 		name: i		scope: 1		type: 260		JVM #: 11
+kind: variable 		name: sum		scope: 1		type: 260		JVM #: 9
+kind: variable 		name: value		scope: 2		type: 260		JVM #: 12
+kind: variable 		name: value		scope: 1		type: 260		JVM #: 6
+kind: variable 		name: c		scope: 1		type: 260		JVM #: 5
+kind: variable 		name: x		scope: 1		type: 260		JVM #: 3
+kind: variable 		name: y		scope: 1		type: 260		JVM #: 4
+kind: variable 		name: value		scope: 1		type: 260		JVM #: 2
+kind: variable 		name: a		scope: 1		type: 260		JVM #: 0
+kind: variable 		name: b		scope: 1		type: 260		JVM #: 1
+
