@@ -80,17 +80,17 @@ if 				{return Parser.IF;}
 							}
 
 
-"<="			{return Parser.LTE;}
-">="			{return Parser.GTE;}
-"<"				{return Parser.LT;}
-">"				{return Parser.GT;}
-"=="			{return Parser.EQ;}
-"!="			{return Parser.NOTEQ;}
+"<="			{yyparser.yylval = new ParserVal(Parser.LTE); return Parser.LTE;}
+">="			{yyparser.yylval = new ParserVal(Parser.GTE); return Parser.GTE;}
+"<"				{yyparser.yylval = new ParserVal(Parser.LT); return Parser.LT;}
+">"				{yyparser.yylval = new ParserVal(Parser.GT); return Parser.GT;}
+"=="			{yyparser.yylval = new ParserVal(Parser.EQ); return Parser.EQ;}
+"!="			{yyparser.yylval = new ParserVal(Parser.NOTEQ); return Parser.NOTEQ;}
 
-"+"				{return Parser.PLUS;}
-"-"				{return Parser.MINUS;}
-"*"				{return Parser.MULT;}
-"/"				{return Parser.DIVIDE;}
+"+"				{yyparser.yylval = new ParserVal(Parser.PLUS); return Parser.PLUS;}
+"-"				{yyparser.yylval = new ParserVal(Parser.MINUS); return Parser.MINUS;}
+"*"				{yyparser.yylval = new ParserVal(Parser.MULT); return Parser.MULT;}
+"/"				{yyparser.yylval = new ParserVal(Parser.DIVIDE); return Parser.DIVIDE;}
 
 "="				{return Parser.ASSIGN;}
 

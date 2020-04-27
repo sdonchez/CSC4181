@@ -21,15 +21,23 @@ import java.util.*;
 %%
 
 program:		{ 
+					//Enter Symbol Table Scope
 					symtab.enterScope();
-					// TODO generate code prologue
+
+					//Generate Code Prologue
+					GenCode.genPrologue();
                 } 
                 declaration_list 
                 {
+                	if (usesRead) GenCode.genReadMethod();
+                	// generate class constructor code
+					GenCode.genClassConstructor();
+
+                	// generate epilog
+					GenCode.genEpilogue(symtab);
+
+					// Exit Symbol Table Scope
 					symtab.exitScope();
-                	// if (usesRead) GenCode.genReadMethod();
-                	// TODO generate class constructor code
-                	// TODO generate epilog
                 	if (!seenMain) 
 					{
 						semerror("No main in file"); 
@@ -62,6 +70,12 @@ var_declaration:	type_specifier ID SEMI
 						{
 							SymTabRec rec = new VarRec(name, symtab.getScope(), vartype);
 							symtab.insert(name, rec);
+
+							//Generate code for variable declaration if in global scope
+							if (symtab.getScope() == 0)
+							{
+								GenCode.genStaticDecl(rec);
+							}
 						}
 					}
 			|		type_specifier ID LBRACK NUM RBRACK SEMI
@@ -81,6 +95,16 @@ var_declaration:	type_specifier ID SEMI
 						{
 							SymTabRec rec = new ArrRec(name, symtab.getScope(), vartype, arrlen);
 							symtab.insert(name, rec);
+
+							//Generate code for variable declaration if in global scope
+							if (symtab.getScope() == 0)
+							{
+								GenCode.genStaticDecl(rec);
+							}
+							else
+							{
+								GenCode.genArrInit(rec);
+							}
 						}
 					}
 			;
@@ -107,9 +131,11 @@ fun_declaration:	type_specifier ID
 						else if (!seenMain)
 						{
 							symtab.insert(name, rec);
+							SymTabRec.setJVMNum(0); /* reset JVM# to 0 */
 							if (name.equals("main"))
 							{
 								seenMain = true;
+								SymTabRec.setJVMNum(1); /* Start JVM # @ 1 for main */
 							}
 						}
 						else
@@ -142,10 +168,14 @@ fun_declaration:	type_specifier ID
 								semerror("Params of main must be void or empty");
 							}
 						}
+
+						//Begin the function declaration
+						GenCode.genFunBegin(rec);
 					}
 					compound_stmt
 					{
 						firstTime = true;
+						GenCode.genFunEnd();
 					}
 			;
 
@@ -254,8 +284,14 @@ assign_stmt:	ID ASSIGN expression SEMI
 					{
 						semerror("Name " + name + " is not a variable in the current scope");
 					}
+					GenCode.genStore(rec);
 				}
-			|	ID LBRACK expression RBRACK ASSIGN expression SEMI
+			|	ID 
+				{
+					SymTabRec rec = symtab.get($1.sval);
+					GenCode.genLoadArrAddr(rec);
+				}
+				LBRACK expression RBRACK ASSIGN expression SEMI
 				{
 					String name = $1.sval;
 					SymTabRec rec = symtab.get(name);
@@ -267,16 +303,62 @@ assign_stmt:	ID ASSIGN expression SEMI
 					{
 						semerror("Name " + name + " is not an array in the current scope");
 					}
+					else
+					{
+						GenCode.genIAStore();
+					}
 				}
 			;
 
-selection_stmt:	IF LPAREN expression RPAREN statement ELSE statement
+selection_stmt:	IF LPAREN expression RPAREN 
+				{
+					String label1 = GenCode.getLabel();
+					$$ = new ParserVal(label1); //becomes $5 below
+					GenCode.genFGoto(label1);
+				}
+				statement 
+				{
+					String label2 = GenCode.getLabel();
+					$$ = new ParserVal(label2); //becomes $7 below
+					GenCode.genGoto(label2);
+				}
+				ELSE 
+				{
+					GenCode.genLabel($5.sval);
+				}
+				statement
+				{
+					GenCode.genLabel($7.sval);
+				}
 			;
 
-iteration_stmt:	WHILE LPAREN expression RPAREN statement
+iteration_stmt:	WHILE LPAREN 
+				{
+					String label1 = GenCode.getLabel();
+					$$ = new ParserVal(label1); //becomes $3 below
+					GenCode.genLabel(label1);
+				}
+				expression
+				{
+					String label2 = GenCode.getLabel();
+					$$ = new ParserVal(label2); //becomes $5 below
+					GenCode.genFGoto(label2);
+				}
+				RPAREN statement
+				{
+					GenCode.genGoto($3.sval);
+					GenCode.genLabel($5.sval);
+				}
 			;
 
-print_stmt:		PRINT LPAREN expression RPAREN SEMI
+print_stmt:		PRINT LPAREN 
+				{
+					GenCode.genBeginPrint();	
+				}
+				expression RPAREN SEMI
+				{
+					GenCode.genEndPrint();
+				}
 			;
 
 input_stmt:		ID ASSIGN INPUT LPAREN RPAREN SEMI
@@ -294,15 +376,25 @@ input_stmt:		ID ASSIGN INPUT LPAREN RPAREN SEMI
 					else
 					{
 						usesRead = true;
+						GenCode.genRead(rec);
 					}
 				}
 			;
 
 return_stmt:	RETURN SEMI
+				{
+					GenCode.genReturn();
+				}
 			|	RETURN expression SEMI
+				{
+					GenCode.genIReturn();
+				}
 			;
 
 expression:	  	additive_expression relop additive_expression
+			{
+				GenCode.genRelOper($2.ival);
+			}
 			|	additive_expression
 			;
 
@@ -315,6 +407,9 @@ relop:		 	LTE
 			;
 
 additive_expression: 	additive_expression addop term
+				{
+					GenCode.genArithOper($2.ival);
+				}
 			|			term
 			;
 
@@ -322,6 +417,9 @@ addop:			PLUS | MINUS
 			;
 
 term:			term mulop factor
+				{
+					GenCode.genArithOper($2.ival);
+				}
 			|	factor
 			;
 
@@ -342,8 +440,21 @@ factor:			LPAREN expression RPAREN
 					{
 						semerror("Name " + name + " is not a variable or array in the current scope");
 					}
+					if (rec.isVar())
+					{
+						GenCode.genLoadVar(rec);
+					}
+					else
+					{
+						GenCode.genLoadArrAddr(rec); //is this right for array ID?
+					}
 				}
-			|	ID LBRACK expression RBRACK
+			|	ID
+				{
+					SymTabRec rec = symtab.get($1.sval);
+					GenCode.genLoadArrAddr(rec);
+				} 
+				LBRACK expression RBRACK
 				{
 					String name = $1.sval;
 					SymTabRec rec = symtab.get(name);
@@ -355,9 +466,17 @@ factor:			LPAREN expression RPAREN
 					{
 						semerror("Name " + name + " is not an array in the current scope");
 					}
+					else
+					{
+						GenCode.genIALoad();
+					}
 				}
 			|	call
 			|	NUM
+				{
+					int number = $1.ival;
+					GenCode.genLoadConst(number);
+				}
 			;
 
 call:			ID LPAREN args RPAREN
@@ -372,6 +491,7 @@ call:			ID LPAREN args RPAREN
 					{
 						semerror("Name " + name + " is not a function in the current scope");
 					}
+					GenCode.genFunCall(rec);
 				}
 			;
 
